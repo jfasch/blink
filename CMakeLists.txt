@@ -20,3 +20,6 @@ TARGET_LINK_LIBRARIES(blink-get gpiod)
 
 ADD_EXECUTABLE(blink-watch blink-watch.cpp)
 TARGET_LINK_LIBRARIES(blink-watch gpiod)
+
+ADD_EXECUTABLE(blink-set blink-set.cpp)
+TARGET_LINK_LIBRARIES(blink-set gpiod)
