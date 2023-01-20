@@ -15,11 +15,11 @@ endif()
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../install/include)
 LINK_DIRECTORIES(${CMAKE_SOURCE_DIR}/../install/lib)
 
-ADD_EXECUTABLE(blink-get blink-get.cpp)
-TARGET_LINK_LIBRARIES(blink-get gpiod)
+ADD_EXECUTABLE(blink-get-single blink-get-single.cpp)
+TARGET_LINK_LIBRARIES(blink-get-single gpiod)
 
-ADD_EXECUTABLE(blink-watch blink-watch.cpp)
-TARGET_LINK_LIBRARIES(blink-watch gpiod)
+ADD_EXECUTABLE(blink-watch-single blink-watch-single.cpp)
+TARGET_LINK_LIBRARIES(blink-watch-single gpiod)
 
-ADD_EXECUTABLE(blink-set blink-set.cpp)
-TARGET_LINK_LIBRARIES(blink-set gpiod)
+ADD_EXECUTABLE(blink-set-single blink-set-single.cpp)
+TARGET_LINK_LIBRARIES(blink-set-single gpiod)
