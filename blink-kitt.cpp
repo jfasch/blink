@@ -46,18 +46,15 @@ int main(int argc, char** argv)
     int movement = +1;
     while (true) {
         check_gpiod_error(gpiod_line_request_set_value(request, OFFSETS[index], line_value(true)));
-        this_thread::sleep_for(0.2s);
+        this_thread::sleep_for(0.06s);
         check_gpiod_error(gpiod_line_request_set_value(request, OFFSETS[index], line_value(false)));
         
-        index += movement;
-        if (index == NOFFSETS) {
-            index = NOFFSETS-2;
+        if (index == NOFFSETS-1)
             movement = -1;
-        }
-        else if (index == -1) {
-            index = 1;
+        else if (index == 0)
             movement = +1;
-        }
+
+        index += movement;
     }
  
     return 0;
