@@ -13,14 +13,15 @@ int main(int argc, char** argv)
         cerr << "Usage: " << argv[0] << " <GPIO#> <value> [<hold-time-sec>]"<< endl;
         return 1;
     }
+
     unsigned int offset = stoul(argv[1]);
-    gpiod_line_value value = str_to_line_value(argv[2]);
+    gpiod_line_value value = line_value(argv[2]);
     unsigned int hold_time_sec = -1;
     if (argc == 4)
         hold_time_sec = stoul(argv[3]);
     
     gpiod_request_config *req_cfg = gpiod_request_config_new();
-	gpiod_request_config_set_consumer(req_cfg, "blink-set");
+	gpiod_request_config_set_consumer(req_cfg, "blink-set-single");
 
 	gpiod_line_settings* settings = gpiod_line_settings_new();
     check_gpiod_error(gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_OUTPUT));

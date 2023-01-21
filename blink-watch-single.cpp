@@ -11,7 +11,7 @@ using namespace std;
 int main()
 {
     gpiod_request_config *req_cfg = gpiod_request_config_new();
-	gpiod_request_config_set_consumer(req_cfg, "blink-watch");
+	gpiod_request_config_set_consumer(req_cfg, "blink-watch-single");
 
 	gpiod_line_settings* settings = gpiod_line_settings_new();
     check_gpiod_error(gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_INPUT));

@@ -23,3 +23,6 @@ TARGET_LINK_LIBRARIES(blink-watch-single gpiod)
 
 ADD_EXECUTABLE(blink-set-single blink-set-single.cpp)
 TARGET_LINK_LIBRARIES(blink-set-single gpiod)
+
+ADD_EXECUTABLE(blink-kitt blink-kitt.cpp)
+TARGET_LINK_LIBRARIES(blink-kitt gpiod)
