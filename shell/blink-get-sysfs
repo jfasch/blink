@@ -1,0 +1,23 @@
+#!/bin/sh
+
+set -e
+
+if [ $# -ne 1 ]; then
+    echo Usage: $0 '<GPIO#>' 1>&2
+    exit 1
+fi
+
+GPIO=$1
+
+# export GPIO
+echo $GPIO > /sys/class/gpio/export
+
+# give system time to export GPIO (sadly, this is an asynchronous
+# operation)
+sleep 1
+
+# configure GPIO as input
+echo in > /sys/class/gpio/gpio$GPIO/direction
+
+# get value
+cat /sys/class/gpio/gpio$GPIO/value
