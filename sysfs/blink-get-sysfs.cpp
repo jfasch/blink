@@ -4,7 +4,9 @@
 #include <string.h>
 
 #include <iostream>
+#include <string>
 using namespace std;
+
 
 int main(int argc, char** argv)
 {
@@ -21,19 +23,19 @@ int main(int argc, char** argv)
     //
     // $ echo $GPIO > /sys/class/gpio/export
     {
-        int fd = open("/sys/class/gpio/export", O_WRONLY);
-        if (fd == -1) {
+        int fd = open("/sys/class/gpio/export", O_WRONLY);  // <--- man -s 2 open
+        if (fd == -1) {                                     // <--- Unix error handling
             perror("open export file");
-            return 1;
+            return 1;                                       // <--- exit status 1
         }
 
-        ssize_t nwritten = write(fd, GPIO, strlen(GPIO));
-        if (nwritten == -1) {
+        ssize_t nwritten = write(fd, GPIO, strlen(GPIO));   // <--- man -s 2 write
+        if (nwritten == -1) {                               // <--- Unix error handling
             perror("write to export file");
             return 1;
         }
 
-        close(fd);
+        close(fd);                                          // <--- man -s 2 close
     }
 
     // give system time to export GPIO (sadly, this is an asynchronous
@@ -67,7 +69,7 @@ int main(int argc, char** argv)
         int fd = open(filename, O_RDONLY);
         assert(fd != -1);
         char value[2] = "x";
-        ssize_t nread = read(fd, value, 1);
+        ssize_t nread = read(fd, value, 1);                 // <--- man -s 2 read
         assert(nread == 1);
 
         cout << value << endl;

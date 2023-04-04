@@ -1,10 +1,10 @@
 #!/bin/sh
 
-set -e
+set -e                                                 # <--- stop on error
 
-if [ $# -ne 1 ]; then
-    echo Usage: $0 '<GPIO#>' 1>&2
-    exit 1
+if [ $# -ne 1 ]; then                                  # <--- $# ... index of last valid argument
+    echo Usage: $0 '<GPIO#>' 1>&2                      # <--- onto stderr
+    exit 1                                             # <--- exit status 1
 fi
 
 GPIO=$1
