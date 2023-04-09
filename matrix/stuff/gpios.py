@@ -16,8 +16,13 @@ MATRIX = (
 LINEAR = tuple(itertools.chain(*MATRIX))
 CHIP = '/dev/gpiochip0'
 
-def request_gpios():
-    return request_lines(
-        CHIP, 
-        consumer=os.path.basename(sys.argv[0]), 
-        config={LINEAR: LineSettings(direction=Direction.OUTPUT)})
+_REQUEST = None
+
+def REQUEST():
+    global _REQUEST
+    if _REQUEST is None:
+        _REQUEST = request_lines(
+            CHIP, 
+            consumer=os.path.basename(sys.argv[0]), 
+            config={LINEAR: LineSettings(direction=Direction.OUTPUT)})
+    return _REQUEST
