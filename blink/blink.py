@@ -9,16 +9,11 @@ MATRIX = (
     ( 6, 16,  7, 24, 15),
     (13, 12,  8, 23, 14),
 )
-ALL_IOS = sum(MATRIX, start=())
-OUTER_SQUARE = (11, 10, 27, 4, 2, 3, 18, 15, 14, 23, 8, 12, 13, 6, 5, 0)
-INNER_SQUARE = (9, 22, 17, 25, 24, 7, 16, 20)
-SLASH = (13, 16, 1, 17, 2)
-BACKSLASH = (11, 9, 1, 24, 14)
 
 REQUEST = gpiod.request_lines(
     '/dev/gpiochip0',
     consumer='glt2023',
-    config={ALL_IOS: gpiod.LineSettings(direction=gpiod.line.Direction.OUTPUT)})
+    config={sum(MATRIX, start=()): gpiod.LineSettings(direction=gpiod.line.Direction.OUTPUT)})
 
 def SET_VALUES(ios, b):
     REQUEST.set_values({i: gpiod.line.Value(b) for i in ios})
