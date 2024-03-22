@@ -1,22 +1,25 @@
 import asyncio
-import gpiod
 import itertools
 
-MATRIX = (
-    (11, 10, 27,  4,  2),
-    ( 0,  9, 22, 17,  3),
-    ( 5, 20,  1, 25, 18),
-    ( 6, 16,  7, 24, 15),
-    (13, 12,  8, 23, 14),
-)
 
-REQUEST = gpiod.request_lines(
-    '/dev/gpiochip0',
-    consumer='glt2023',
-    config={sum(MATRIX, start=()): gpiod.LineSettings(direction=gpiod.line.Direction.OUTPUT)})
+if False:
+    import gpiod
 
-def SET_VALUES(ios, b):
-    REQUEST.set_values({i: gpiod.line.Value(b) for i in ios})
+    MATRIX = (
+        (11, 10, 27,  4,  2),
+        ( 0,  9, 22, 17,  3),
+        ( 5, 20,  1, 25, 18),
+        ( 6, 16,  7, 24, 15),
+        (13, 12,  8, 23, 14),
+    )
+
+    REQUEST = gpiod.request_lines(
+        '/dev/gpiochip0',
+        consumer='glt2023',
+        config={sum(MATRIX, start=()): gpiod.LineSettings(direction=gpiod.line.Direction.OUTPUT)})
+
+    def SET_VALUES(ios, b):
+        REQUEST.set_values({i: gpiod.line.Value(b) for i in ios})
 
 def program(func):
     def factory(*args, **kwargs):
@@ -26,27 +29,33 @@ def program(func):
     return factory
 
 def launch(prog):
-    return asyncio.ensure_future(prog())
+    # return asyncio.ensure_future(prog())
+    return asyncio.create_task(prog())
 
 @program
 async def on(ios):
     try:
-        SET_VALUES(ios, 1)
+        ios.set(True)
         await asyncio.get_running_loop().create_future()   # <--- sit until cancelled
     finally:
-        SET_VALUES(ios, 0)
+        ios.set(False)
+
+@program
+async def crash():
+#    open('/tmp/xxx', 'a').write('I was here\n')
+    assert False, 'yay'
 
 @program
 async def blink(ios, interval, ntimes=None):
     loop = (ntimes is None) and itertools.count() or range(ntimes)
     try:
         for _ in loop:
-            SET_VALUES(ios, 1)
+            ios.set(True)
             await asyncio.sleep(interval)
-            SET_VALUES(ios, 0)
+            ios.set(False)
             await asyncio.sleep(interval)
     finally:
-        SET_VALUES(ios, 0)
+        ios.set(False)
 
 @program
 async def sleep(secs):
@@ -63,16 +72,6 @@ async def forever(prog):
         current.cancel()
 
 @program
-async def all(progs):
-    task = None
-    try:
-        task = asyncio.gather(*[launch(p) for p in progs])
-        await task
-    finally:
-        if task:
-            task.cancel()
-
-@program
 async def sequence(progs):
     current = None
     try:
@@ -85,12 +84,12 @@ async def sequence(progs):
 
 @program
 async def cycle(ios, interval):
-    try:
-        for i in itertools.cycle(ios):
-            current = launch(blink((i,), interval, 1))
-            await current
-    finally:
-        current.cancel()
+    assert False
+    for io in itertools.cycle(ios):
+        io.set(True)
+        await asyncio.sleep(interval)
+        io.set(False)
+        await asyncio.sleep(interval)
 
 @program
 async def any(progs):
@@ -102,3 +101,14 @@ async def any(progs):
     finally:
         for t in tasks:
             t.cancel()
+
+@program
+async def all(progs):
+    task = None
+    try:
+        task = asyncio.gather(*[p() for p in progs])
+        await task
+    finally:
+        if task:
+            task.cancel()
+

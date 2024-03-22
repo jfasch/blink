@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from blink import blink
+
 from textual.app import App
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Button, Static
@@ -8,39 +10,51 @@ import asyncio
 import itertools
 
 
-class ButtonMatrix:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
+class ButtonIOS:
+    def __init__(self, buttons):
+        self.buttons = buttons
+    def set(self, value):
+        for b in self.buttons:
+            b.label = 'ON' if value else 'OFF'
+    def iter(self):
+        for b in self.buttons:
+            yield ButtonIOS([b])
+
+async def runcoro(coro):
+#    open('/tmp/xxx', 'a').write('runcoro\n')
+    try:
+        await coro
+    except Exception as e:
+        open('/tmp/xxx', 'a').write(str(e)+'\n')
         
-        self.matrix = []
-        for j in range(y):
-            self.matrix.append([Button(f'({i},{j})') for i in range(x)])
-
-    def get_buttons(self, coords):
-        buttons = []
-        for x, y in coords:
-            buttons.append(self.matrix[x][y])
-        return buttons
-
 class BlinkApp(App):
     def compose(self):
-        self.matrix = ButtonMatrix(10, 10)
-    
-        async def blink_corofunc():
-            all_buttons = sum(self.matrix.matrix, start=[])
-            for button in itertools.cycle(all_buttons):
-                await asyncio.sleep(0.2)
-                button.disabled = not button.disabled                
+        # self.program = blink.all([
+        #     blink.blink(ButtonIOS(self.matrix[0]), 0.1),
+        #     blink.blink(ButtonIOS(self.matrix[1]), 0.2),
+        #     blink.blink(ButtonIOS(self.matrix[2]), 0.3),
+        #     blink.blink(ButtonIOS(self.matrix[3]), 0.4),
+        #     blink.blink(ButtonIOS(self.matrix[4]), 0.5),
+        # ])
 
-        self.blinker = asyncio.create_task(blink_corofunc())
+        # self.program = blink.cycle(ButtonIOS(self.matrix[0]), 0.2)
 
-        horiz = []
-        for j in range(self.matrix.y):
-            horiz.append(Horizontal(*self.matrix.matrix[j]))
+        #self.program = blink.blink(ButtonIOS(self.matrix[0][0]), 0.2)
+        #self.program = blink.on(ButtonIOS(self.matrix[0]))
 
-        yield Vertical(*horiz)
+        self.program = blink.crash()
 
-if __name__ == "__main__":
-    app = BlinkApp()
-    app.run()
+        with Vertical():
+            for i in range(5):
+                with Horizontal():
+                    for j in range(5):
+                        yield Button('OFF')
+
+    def on_mount(self):
+        # async with asyncio.TaskGroup() as tg:
+        #     self.progtask = tg.create_task(blink.crash()())
+#        self.progtask = asyncio.create_task(self.program())
+        self.runner = asyncio.create_task(runcoro(self.program()))
+
+app = BlinkApp()
+app.run()
