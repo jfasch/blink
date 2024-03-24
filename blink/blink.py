@@ -1,27 +1,10 @@
 import asyncio
 import itertools
+import functools
 
-
-if False:
-    import gpiod
-
-    MATRIX = (
-        (11, 10, 27,  4,  2),
-        ( 0,  9, 22, 17,  3),
-        ( 5, 20,  1, 25, 18),
-        ( 6, 16,  7, 24, 15),
-        (13, 12,  8, 23, 14),
-    )
-
-    REQUEST = gpiod.request_lines(
-        '/dev/gpiochip0',
-        consumer='glt2023',
-        config={sum(MATRIX, start=()): gpiod.LineSettings(direction=gpiod.line.Direction.OUTPUT)})
-
-    def SET_VALUES(ios, b):
-        REQUEST.set_values({i: gpiod.line.Value(b) for i in ios})
 
 def program(func):
+    @functools.wraps(func)
     def factory(*args, **kwargs):
         def create_coro():
             return func(*args, **kwargs)
@@ -29,7 +12,6 @@ def program(func):
     return factory
 
 def launch(prog):
-    # return asyncio.ensure_future(prog())
     return asyncio.create_task(prog())
 
 @program
@@ -41,35 +23,28 @@ async def on(ios):
         ios.set(False)
 
 @program
-async def crash():
-#    open('/tmp/xxx', 'a').write('I was here\n')
-    assert False, 'yay'
-
-@program
-async def blink(ios, interval, ntimes=None):
-    loop = (ntimes is None) and itertools.count() or range(ntimes)
-    try:
-        for _ in loop:
-            ios.set(True)
-            await asyncio.sleep(interval)
-            ios.set(False)
-            await asyncio.sleep(interval)
-    finally:
-        ios.set(False)
-
-@program
 async def sleep(secs):
     await asyncio.sleep(secs)
 
 @program
-async def forever(prog):
+async def repeat(prog, ntimes=None):
+    if ntimes is None:
+        loop = itertools.count()
+    else:
+        loop = range(ntimes)
+
     current = None
     try:
-        while True:
+        for _ in loop:
             current = launch(prog)
             await current
     finally:
-        current.cancel()
+        if current:
+            current.cancel()
+
+@program
+async def forever(prog):
+    await launch(repeat(prog, ntimes=None))
 
 @program
 async def sequence(progs):
@@ -84,12 +59,8 @@ async def sequence(progs):
 
 @program
 async def cycle(ios, interval):
-    assert False
-    for io in itertools.cycle(ios):
-        io.set(True)
-        await asyncio.sleep(interval)
-        io.set(False)
-        await asyncio.sleep(interval)
+    for io in itertools.cycle(ios.iter()):
+        await launch(any((on(io), sleep(interval))))
 
 @program
 async def any(progs):
@@ -112,3 +83,20 @@ async def all(progs):
         if task:
             task.cancel()
 
+@program
+async def blink(ios, interval, ntimes=None):
+    prog = repeat(
+        sequence((
+            any((
+                on(ios),
+                sleep(interval),
+            )),
+            sleep(interval),
+        )),
+        ntimes)
+
+    try:
+        current = launch(prog)
+        await current
+    finally:
+        current.cancel()
