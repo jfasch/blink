@@ -58,6 +58,11 @@ async def sequence(progs):
             current.cancel()
 
 @program
+async def walk(ios, interval):
+    for io in ios.iter():
+        await launch(any((on(io), sleep(interval))))
+
+@program
 async def cycle(ios, interval):
     for io in itertools.cycle(ios.iter()):
         await launch(any((on(io), sleep(interval))))

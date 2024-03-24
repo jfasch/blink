@@ -1,4 +1,4 @@
-from .blink import program, launch, sequence, cycle, blink, all
+from .blink import program, launch, sequence, cycle, blink, all, walk, forever
 from .io import IOS
 
 from gpiod import request_lines, LineSettings
@@ -78,34 +78,40 @@ async def cycle_cols(matrix):
 
 @program
 async def spiral(matrix):
-    ios = IOS.from_ios((
-        matrix.get(0, 0),
-        matrix.get(0, 1),
-        matrix.get(0, 2),
-        matrix.get(0, 3),
-        matrix.get(0, 4),
-        matrix.get(1, 4),
-        matrix.get(2, 4),
-        matrix.get(3, 4),
-        matrix.get(4, 4),
-        matrix.get(4, 3),
-        matrix.get(4, 2),
-        matrix.get(4, 1),
-        matrix.get(4, 0),
-        matrix.get(3, 0),
-        matrix.get(2, 0),
-        matrix.get(1, 0),
+    outer = IOS.from_ios(
+        (matrix.get(0, 0),
+         matrix.get(0, 1),
+         matrix.get(0, 2),
+         matrix.get(0, 3),
+         matrix.get(0, 4),
+         matrix.get(1, 4),
+         matrix.get(2, 4),
+         matrix.get(3, 4),
+         matrix.get(4, 4),
+         matrix.get(4, 3),
+         matrix.get(4, 2),
+         matrix.get(4, 1),
+         matrix.get(4, 0),
+         matrix.get(3, 0),
+         matrix.get(2, 0),
+         matrix.get(1, 0),
+         ))
 
-        matrix.get(1, 1),
-        matrix.get(1, 2),
-        matrix.get(1, 3),
-        matrix.get(2, 3),
-        matrix.get(3, 3),
-        matrix.get(3, 2),
-        matrix.get(3, 1),
-        matrix.get(2, 1),
+    inner = IOS.from_ios(
+        (matrix.get(1, 1),
+         matrix.get(1, 2),
+         matrix.get(1, 3),
+         matrix.get(2, 3),
+         matrix.get(3, 3),
+         matrix.get(3, 2),
+         matrix.get(3, 1),
+         matrix.get(2, 1),
+         ))
 
-        matrix.get(2, 2),
+    prog = sequence((
+        walk(outer, 0.07),
+        walk(inner, 0.10),
+        blink(matrix.get(2,2), 0.09, 10),
     ))
 
-    await launch(cycle(ios, 0.07))
+    await launch(forever(prog))
