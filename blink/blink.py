@@ -15,12 +15,12 @@ def launch(prog):
     return asyncio.create_task(prog())
 
 @program
-async def on(ios):
+async def on(output):
     try:
-        ios.set(True)
+        output.set(True)
         await asyncio.get_running_loop().create_future()   # <--- sit until cancelled
     finally:
-        ios.set(False)
+        output.set(False)
 
 @program
 async def sleep(secs):
@@ -58,14 +58,14 @@ async def sequence(progs):
             current.cancel()
 
 @program
-async def walk(ios, interval):
-    for io in ios.iter():
-        await launch(any((on(io), sleep(interval))))
+async def walk(outputs, interval):
+    for output in outputs:
+        await launch(any((on(output), sleep(interval))))
 
 @program
-async def cycle(ios, interval):
-    for io in itertools.cycle(ios.iter()):
-        await launch(any((on(io), sleep(interval))))
+async def cycle(outputs, interval):
+    for output in itertools.cycle(outputs):
+        await launch(any((on(output), sleep(interval))))
 
 @program
 async def any(progs):
@@ -89,11 +89,11 @@ async def all(progs):
             task.cancel()
 
 @program
-async def blink(ios, interval, ntimes=None):
+async def blink(output, interval, ntimes=None):
     prog = repeat(
         sequence((
             any((
-                on(ios),
+                on(output),
                 sleep(interval),
             )),
             sleep(interval),

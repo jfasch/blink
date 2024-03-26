@@ -1,7 +1,7 @@
 from gpiod.line import Value
 
 
-class IOS:
+class Output:
     def __init__(self, request, numbers):
         self.request = request
         self.numbers = numbers
@@ -12,16 +12,11 @@ class IOS:
         self.request.set_values(lines)
 
     @classmethod
-    def from_ios(cls, ios):
-        assert len(ios) > 0
-        request = ios[0].request
+    def from_many(cls, outputs):
+        assert len(outputs) > 0
+        request = outputs[0].request
         numbers = []
-        for io in ios:
-            for num in io.numbers:
-                numbers.append(num)
+        for output in outputs:
+            numbers.extend(output.numbers)
 
-        return IOS(request=request, numbers=numbers)
-
-    def iter(self):
-        for num in self.numbers:
-            yield IOS(request=self.request, numbers=(num,))
+        return Output(request=request, numbers=numbers)
