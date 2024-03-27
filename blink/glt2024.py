@@ -4,7 +4,7 @@ from .io import Output
 from gpiod import request_lines, LineSettings
 from gpiod.line import Direction
 
-_GLT_MATRIX = (
+_OUTPUTS = (
     (27,  0, 20, 12, 24),
     (17, 11, 16,  1, 23),
     ( 4,  9, 13,  7, 18),
@@ -12,9 +12,12 @@ _GLT_MATRIX = (
     ( 2, 22,  5, 25, 14),
 )
 
+_INPUTS = (19, 26)
+
+
 class GLTMatrix:
     def __init__(self):
-        all_numbers = sum(_GLT_MATRIX, ())
+        all_numbers = sum(_OUTPUTS, ())
 
         self.request = request_lines(
             '/dev/gpiochip0',
@@ -23,10 +26,10 @@ class GLTMatrix:
         )
 
         self.matrix = []
-        for rowno in range(len(_GLT_MATRIX)):
+        for rowno in range(len(_OUTPUTS)):
             row = []
-            for colno in range(len(_GLT_MATRIX[rowno])):
-                row.append(Output(request=self.request, numbers=(_GLT_MATRIX[rowno][colno],)))
+            for colno in range(len(_OUTPUTS[rowno])):
+                row.append(Output(request=self.request, numbers=(_OUTPUTS[rowno][colno],)))
 
             self.matrix.append(row)
 
