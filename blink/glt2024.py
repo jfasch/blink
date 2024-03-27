@@ -42,7 +42,7 @@ class GLTMatrix:
     def get(self, x, y):
         return self.matrix[x][y]
 
-    def outer(self):
+    def outer_ring_clockwise(self):
         return (self.get(0, 0),
                 self.get(0, 1),
                 self.get(0, 2),
@@ -61,7 +61,7 @@ class GLTMatrix:
                 self.get(1, 0),
                 )
 
-    def inner(self):
+    def inner_ring_clockwise(self):
         return (self.get(1, 1),
                 self.get(1, 2),
                 self.get(1, 3),
@@ -122,8 +122,8 @@ async def spiral(matrix):
     await launch(
         forever(
             sequence(
-                (walk(matrix.outer(), 0.07),
-                 walk(matrix.inner(), 0.10),
+                (walk(matrix.outer_ring_clockwise(), 0.07),
+                 walk(matrix.inner_ring_clockwise(), 0.10),
                  blink(matrix.get(2,2), 0.01),
                  )
             )
@@ -134,8 +134,8 @@ async def spiral(matrix):
 async def mad(matrix):
     await launch(
         all(
-            (cycle(matrix.outer(), 0.07),
-             cycle(reversed(matrix.inner()), 0.10),
+            (cycle(matrix.outer_ring_clockwise(), 0.07),
+             cycle(reversed(matrix.inner_ring_clockwise()), 0.10),
              blink(matrix.get(2,2), 0.07),
              )
         )

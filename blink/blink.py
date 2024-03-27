@@ -47,7 +47,7 @@ async def forever(prog):
     await launch(repeat(prog, ntimes=None))
 
 @program
-async def sequence(progs):
+async def sequence(*progs):
     current = None
     try:
         for p in progs:
@@ -60,15 +60,15 @@ async def sequence(progs):
 @program
 async def walk(outputs, interval):
     for output in outputs:
-        await launch(any((on(output), sleep(interval))))
+        await launch(any(on(output), sleep(interval)))
 
 @program
 async def cycle(outputs, interval):
     for output in itertools.cycle(outputs):
-        await launch(any((on(output), sleep(interval))))
+        await launch(any(on(output), sleep(interval)))
 
 @program
-async def any(progs):
+async def any(*progs):
     tasks = [launch(p) for p in progs]
     try:
         done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
@@ -79,7 +79,7 @@ async def any(progs):
             t.cancel()
 
 @program
-async def all(progs):
+async def all(*progs):
     task = None
     try:
         task = asyncio.gather(*[p() for p in progs])
@@ -91,14 +91,14 @@ async def all(progs):
 @program
 async def blink(output, interval, ntimes=None):
     prog = repeat(
-        sequence((
-            any((
+        sequence(
+            any(
                 on(output),
                 sleep(interval),
-            )),
+            ),
             sleep(interval),
-        )),
-        ntimes)
+        ),
+        ntimes=ntimes)
 
     try:
         current = launch(prog)
