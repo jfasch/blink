@@ -182,8 +182,10 @@ async def all_directions(matrix, left_ear, right_ear):
 
 async def main():
     # prog = mad_spiral_until_left_button(matrix=matrix, buttons=buttons)
-    # prog = mickey(matrix=matrix, left_ear=buttons.left, right_ear=buttons.right)
-    prog = all_directions(matrix=matrix, left_ear=buttons.left, right_ear=buttons.right)
+    prog = mickey(matrix=matrix, left_ear=buttons.left, right_ear=buttons.right)
+    # prog = all_directions(matrix=matrix, left_ear=buttons.left, right_ear=buttons.right)
+    # prog = spiral(matrix=matrix)
+    # prog = all_directions(matrix=matrix, left_ear=buttons.left, right_ear=buttons.right)
 
     context = contextvars.copy_context()
     async with asyncio.TaskGroup() as tg:

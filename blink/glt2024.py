@@ -86,23 +86,22 @@ async def blink_rows(matrix):
     nrows, _ = matrix.shape()
     rows = [matrix.row(rowno) for rowno in range(nrows)]
 
-    await launch(
-        sequence(
-            (blink(Output.from_many(rows[0]), 0.09, 3),
-             blink(Output.from_many(rows[1]), 0.08, 3),
-             blink(Output.from_many(rows[2]), 0.07, 3),
-             blink(Output.from_many(rows[3]), 0.06, 3),                 
-             blink(Output.from_many(rows[4]), 0.05, 3),                 
-             )
-        )
+    prog = sequence(
+        (blink(Output.from_many(rows[0]), 0.09, 3),
+         blink(Output.from_many(rows[1]), 0.08, 3),
+         blink(Output.from_many(rows[2]), 0.07, 3),
+         blink(Output.from_many(rows[3]), 0.06, 3),                 
+         blink(Output.from_many(rows[4]), 0.05, 3),                 
+         )
     )
+    await prog()
 
 @program
 async def blink_cols(matrix):
     _, ncols = matrix.shape()
     cols = [matrix.col(colno) for colno in range(ncols)]
 
-    await launch(
+    prog = launch(
         sequence(
             (blink(Output.from_many(cols[0]), 0.09, 3),
              blink(Output.from_many(cols[1]), 0.08, 3),
@@ -112,43 +111,39 @@ async def blink_cols(matrix):
              )
         )
     )
+    await prog()
 
 @program
 async def cycle_cols(matrix):
-    await launch(
-        all(
-            (cycle(matrix.col(0), 0.09),
-             cycle(matrix.col(1), 0.08),
-             cycle(matrix.col(2), 0.07),
-             cycle(matrix.col(3), 0.06),
-             cycle(matrix.col(4), 0.05),
-             )
-        )
+    prog = all(
+        (cycle(matrix.col(0), 0.09),
+         cycle(matrix.col(1), 0.08),
+         cycle(matrix.col(2), 0.07),
+         cycle(matrix.col(3), 0.06),
+         cycle(matrix.col(4), 0.05),
+         )
     )
+    await prog()
 
 @program
 async def spiral(matrix):
-    await launch(
-        forever(
-            sequence(
-                (walk(matrix.outer_ring_clockwise(), 0.07),
-                 walk(matrix.inner_ring_clockwise(), 0.10),
-                 blink(matrix.get(2,2), 0.01),
-                 )
-            )
+    prog = forever(
+        sequence(
+            walk(matrix.outer_ring_clockwise(), 0.07),
+            walk(matrix.inner_ring_clockwise(), 0.10),
+            blink(matrix.get(2,2), 0.01),
         )
     )
+    await prog()
 
 @program 
 async def mad(matrix):
-    await launch(
-        all(
-            (cycle(matrix.outer_ring_clockwise(), 0.07),
-             cycle(reversed(matrix.inner_ring_clockwise()), 0.10),
-             blink(matrix.get(2,2), 0.07),
-             )
-        )
+    prog = all(
+        cycle(matrix.outer_ring_clockwise(), 0.07),
+        cycle(reversed(matrix.inner_ring_clockwise()), 0.10),
+        blink(matrix.get(2,2), 0.07),
     )
+    await prog()
 
 @program
 async def wait_button(button):
@@ -180,7 +175,7 @@ async def wait_button(button):
 @program
 async def mad_spiral_until_left_button(matrix, buttons):
     # await sequence(
-    await launch(sequence(
+    prog = sequence(
         any(
             all(
                 forever(walk(matrix.outer_ring_clockwise(), 0.05)),
@@ -197,4 +192,5 @@ async def mad_spiral_until_left_button(matrix, buttons):
             blink(matrix.get(2,2), 0.01),
             sleep(2),
         ),
-    ))
+    )
+    await prog()
