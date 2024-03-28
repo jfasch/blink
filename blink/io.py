@@ -1,4 +1,7 @@
 from gpiod.line import Value
+import gpiod
+import datetime
+import asyncio
 
 
 class Output:
@@ -20,3 +23,8 @@ class Output:
             numbers.extend(output.numbers)
 
         return Output(request=request, numbers=numbers)
+
+class Input:
+    def __init__(self, device, number):
+        self.device = device
+        self.number = number

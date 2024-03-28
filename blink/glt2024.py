@@ -1,10 +1,10 @@
-from .blink import program, launch, sequence, cycle, blink, all, walk, forever
-from .io import Output
+from .blink import program, launch, sequence, cycle, blink, all, any, walk, forever, sleep
+from .io import Input, Output
 
 from gpiod import request_lines, LineSettings
 from gpiod.line import Direction
 
-_OUTPUTS = (
+OUTPUTS = (
     (27,  0, 20, 12, 24),
     (17, 11, 16,  1, 23),
     ( 4,  9, 13,  7, 18),
@@ -12,24 +12,24 @@ _OUTPUTS = (
     ( 2, 22,  5, 25, 14),
 )
 
-_INPUTS = (19, 26)
+INPUTS = (19, 26)
 
 
 class GLTMatrix:
     def __init__(self):
-        all_numbers = sum(_OUTPUTS, ())
+        all_numbers = sum(OUTPUTS, ())
 
         self.request = request_lines(
             '/dev/gpiochip0',
-            consumer='mytest',
+            consumer='glt2024',
             config={all_numbers: LineSettings(direction=Direction.OUTPUT)},
         )
 
         self.matrix = []
-        for rowno in range(len(_OUTPUTS)):
+        for rowno in range(len(OUTPUTS)):
             row = []
-            for colno in range(len(_OUTPUTS[rowno])):
-                row.append(Output(request=self.request, numbers=(_OUTPUTS[rowno][colno],)))
+            for colno in range(len(OUTPUTS[rowno])):
+                row.append(Output(request=self.request, numbers=(OUTPUTS[rowno][colno],)))
 
             self.matrix.append(row)
 
@@ -74,6 +74,12 @@ class GLTMatrix:
                 self.get(3, 1),
                 self.get(2, 1),
                 )
+
+class GLTButtons:
+    def __init__(self):
+        self.left = Input('/dev/gpiochip0', INPUTS[0]);
+        self.right = Input('/dev/gpiochip0', INPUTS[1]);
+    
 
 @program
 async def blink_rows(matrix):
@@ -143,3 +149,52 @@ async def mad(matrix):
              )
         )
     )
+
+@program
+async def wait_button(button):
+    import gpiod
+    import datetime
+    import asyncio
+
+    with gpiod.request_lines(button.device,
+                             consumer='glt2024',
+                             config={button.number: gpiod.LineSettings(edge_detection=gpiod.line.Edge.RISING,
+                                                                       debounce_period=datetime.timedelta(milliseconds=10),
+                                                                       )
+                                     },
+                             ) as request:
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
+        loop.create_future()
+
+        def callback():
+            request.read_edge_events(1)
+            future.set_result(True)
+
+        loop.add_reader(request.fd, callback)
+        try:
+            await future
+        finally:
+            loop.remove_reader(request.fd)
+
+@program
+async def mad_spiral_until_left_button(matrix, buttons):
+    # await sequence(
+    await launch(sequence(
+        any(
+            all(
+                forever(walk(matrix.outer_ring_clockwise(), 0.05)),
+                forever(walk(list(reversed(matrix.inner_ring_clockwise())), 0.07)),
+                blink(matrix.get(2,2), 0.5),
+            ),
+            wait_button(buttons.left),
+        ),
+        any(
+            blink(matrix.get(2,2), 1),
+            any(wait_button(buttons.left), wait_button(buttons.right)),
+        ),
+        any(
+            blink(matrix.get(2,2), 0.01),
+            sleep(2),
+        ),
+    ))

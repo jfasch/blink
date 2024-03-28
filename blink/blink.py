@@ -1,18 +1,30 @@
 import asyncio
 import itertools
 import functools
+import contextvars
 
 
 def program(func):
     @functools.wraps(func)
     def factory(*args, **kwargs):
+        @functools.wraps(func)
         def create_coro():
             return func(*args, **kwargs)
         return create_coro
     return factory
 
+
+TASK_GROUP = contextvars.ContextVar('_BLINK_TASK_GROUP')
+
+async def launch_isolated(prog):
+    async with asyncio.TaskGroup() as tg:
+        global TASK_GROUP
+        TASK_GROUP.set(tg)
+        await launch(prog)
+
 def launch(prog):
-    return asyncio.create_task(prog())
+    tg = TASK_GROUP.get()
+    return tg.create_task(prog())
 
 @program
 async def on(output):
