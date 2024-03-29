@@ -1,30 +1,8 @@
+from .program import program, launch
+
 import asyncio
 import itertools
-import functools
-import contextvars
 
-
-def program(func):
-    @functools.wraps(func)
-    def factory(*args, **kwargs):
-        @functools.wraps(func)
-        def create_coro():
-            return func(*args, **kwargs)
-        return create_coro
-    return factory
-
-
-TASK_GROUP = contextvars.ContextVar('_BLINK_TASK_GROUP')
-
-async def launch_isolated(prog):
-    async with asyncio.TaskGroup() as tg:
-        global TASK_GROUP
-        TASK_GROUP.set(tg)
-        await launch(prog)
-
-def launch(prog):
-    tg = TASK_GROUP.get()
-    return tg.create_task(prog())
 
 @program
 async def on(output):
@@ -98,3 +76,30 @@ async def blink(output, interval, ntimes=None):
         ntimes=ntimes)
 
     await prog()
+
+@program
+async def wait_button(input, debounce_milli=10):
+    import gpiod
+    import datetime
+    import asyncio
+
+    with gpiod.request_lines(input.device,
+                             consumer='glt2024',
+                             config={input.number: gpiod.LineSettings(edge_detection=gpiod.line.Edge.RISING,
+                                                                      debounce_period=datetime.timedelta(milliseconds=debounce_milli),
+                                                                      )
+                                     },
+                             ) as request:
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
+        loop.create_future()
+
+        def callback():
+            request.read_edge_events(1)
+            future.set_result(True)
+
+        loop.add_reader(request.fd, callback)
+        try:
+            await future
+        finally:
+            loop.remove_reader(request.fd)
