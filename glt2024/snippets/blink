@@ -1,0 +1,9 @@
+def blink(led, interval, ntimes):
+    try:
+        for _ in range(ntimes):
+            led.set(True)
+            time.sleep(interval)
+            led.set(False)
+            time.sleep(interval)
+    finally:
+        led.set(False)

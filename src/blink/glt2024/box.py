@@ -6,10 +6,10 @@ from gpiod.line import Direction
 
 class Box:
     def __init__(self):
-        self.matrix = _LEDMatrix()
-        self.buttons = _Buttons()
+        self.matrix = LEDMatrix()
+        self.buttons = Buttons()
 
-class _LEDMatrix:
+class LEDMatrix:
     OUTPUTS = (
         (27,  0, 20, 12, 24),
         (17, 11, 16,  1, 23),
@@ -19,11 +19,10 @@ class _LEDMatrix:
     )
 
     def __init__(self):
-        all_numbers = sum(self.OUTPUTS, ())
+        all_numbers = sum(self.OUTPUTS, ())  # <--- cool
 
         self.request = request_lines(
             '/dev/gpiochip0',
-            consumer='glt2024',
             config={all_numbers: LineSettings(direction=Direction.OUTPUT)},
         )
 
@@ -80,7 +79,7 @@ class _LEDMatrix:
                 self.get(2, 1),
                 )
 
-class _Buttons:
+class Buttons:
     def __init__(self):
         self.left = Input('/dev/gpiochip0', 26);
         self.right = Input('/dev/gpiochip0', 19);

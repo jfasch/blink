@@ -1,0 +1,13 @@
+prog = forever(
+    sequence(
+        any(
+            all(
+                forever(walk(box.matrix.outer_ring_clockwise(), 0.05)),
+                forever(walk(list(reversed(box.matrix.inner_ring_clockwise())), 0.07)),
+	        blink(box.matrix.get(2,2), 0.5),
+            ),
+            wait_button(box.buttons.left),
+        ),
+        wait_button(box.buttons.right),
+    )
+)

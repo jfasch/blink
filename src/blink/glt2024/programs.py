@@ -405,6 +405,31 @@ async def kaa_spiral(box):
 
     await prog()
 
+@program
+async def the_nice_pattern(box):
+    '''Inner circle rotates clockwise, outer circle rotates
+    counterclockwise.
+
+    * Left button: suspend
+    * Right button: resume
+    '''
+    prog = forever(
+        sequence(
+            any(
+                all(
+                    forever(walk(box.matrix.outer_ring_clockwise(), 0.05)),
+                    forever(walk(list(reversed(box.matrix.inner_ring_clockwise())), 0.07)),
+                    blink(box.matrix.get(2,2), 0.5),
+                ),
+                wait_button(box.buttons.left),
+            ),
+            wait_button(box.buttons.right),
+        )
+    )
+
+    await prog()
+    
+
 menu = (
     blink_rows,
     blink_cols,
@@ -416,4 +441,5 @@ menu = (
     all_directions,
     kaa,
     kaa_spiral,
+    the_nice_pattern,
 )

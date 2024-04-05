@@ -21,7 +21,6 @@ class ButtonIOS:
             yield ButtonIOS([b])
 
 async def runcoro(coro):
-#    open('/tmp/xxx', 'a').write('runcoro\n')
     try:
         await coro
     except Exception as e:
