@@ -1,5 +1,4 @@
-from ..base.program import program, launch
-from ..base.programs import on, sleep, sequence, any, all, blink, cycle, wait_button, forever, repeat, walk
+from ..base.program import program, launch, on, sleep, sequence, any, all, blink, cycle, wait_button, forever, repeat, walk
 from ..base.io import Output
 
 

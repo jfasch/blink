@@ -8,7 +8,15 @@ import asyncio
 
 box = Box()
 
-prog = on(box.matrix.get(2,2))
+prog = forever(
+    sequence(
+        any(
+            on(box.matrix.get(2,2)),
+            sleep(0.2),
+        ),
+        sleep(0.2),
+    )
+)
 
 async def main():
     await launch_isolated(prog)
